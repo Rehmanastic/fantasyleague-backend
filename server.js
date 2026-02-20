@@ -26,17 +26,22 @@ console.log('Allowing CORS for:', FRONTEND_URL);
 // 2. Optimized Socket.IO for Railway
 const io = new Server(httpServer, {
   cors: {
-    origin: FRONTEND_URL,
-    methods: ['GET', 'POST'],
-    credentials: true,
+    // Hardcode the array to be 100% sure, no trailing slashes
+    origin: [
+      "https://fantasyleague-frontend.vercel.app",
+      "http://localhost:5173"
+    ],
+    methods: ["GET", "POST"],
+    credentials: true
   },
-  // Railway/Vercel specific: Increase stability over proxies
-  pingTimeout: 60000, 
-  pingInterval: 25000,
-  connectTimeout: 45000,
-  transports: ['polling', 'websocket'], // Allow polling for the initial handshake
-  allowEIO3: true
+  // Add these for production stability
+  transports: ['polling', 'websocket'],
+  allowEIO3: true,
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
+
+
 
 // 3. Express CORS middleware
 app.use(cors({
@@ -74,6 +79,12 @@ app.use('/api/players', playerRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+// Update the Express CORS as well
+app.use(cors({
+  origin: ["https://fantasyleague-frontend.vercel.app", "http://localhost:5173"],
+  credentials: true
+}));
+
 
 // Socket.IO connection
 io.on('connection', (socket) => {
@@ -93,9 +104,12 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/fantasy-c
   .catch((err) => console.error('MongoDB connection error:', err));
 
 const PORT = process.env.PORT || 5000;
-
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
 
 export { io };
+// server.js
+
+
+// IMPORTANT: Bind to 0.0.0.0
