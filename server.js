@@ -101,9 +101,7 @@ mongoose.connect(MONGODB_URI)
   });
 
 // Ensure your listen is outside the .then() block
-httpServer.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+
 // Socket.IO connection
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
@@ -123,7 +121,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/fantasy-c
 
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
 
 export { io };
