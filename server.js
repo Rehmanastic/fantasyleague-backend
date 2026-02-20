@@ -15,18 +15,34 @@ dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
+
+// ✅ Use FRONTEND_URL for both REST API and Socket.IO
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+// Socket.IO setup
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-    methods: ['GET', 'POST', 'PUT', 'DELETE']
-  }
+    origin: FRONTEND_URL,
+    methods: ['GET', 'POST'],
+  },
 });
 
-// Middleware
-app.use(cors());
+// Middleware for REST API
+app.use(cors({
+  origin: FRONTEND_URL,
+  credentials: true, // needed if you use cookies/auth headers
+}));
 app.use(express.json());
 
-// Routes
+// Health check route
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Fantasy Cricket Backend is running 🚀',
+    status: 'OK',
+  });
+});
+
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/players', playerRoutes);
@@ -34,7 +50,7 @@ app.use('/api/teams', teamRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 
-// Socket.io connection
+// Socket.IO connection
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
@@ -42,14 +58,8 @@ io.on('connection', (socket) => {
     console.log('Client disconnected:', socket.id);
   });
 });
-app.get('/', (req, res) => {
-  res.status(200).json({
-    message: 'Fantasy Cricket Backend is running 🚀',
-    status: 'OK'
-  });
-});
 
-// Make io available to routes
+// Make io available in routes
 app.set('io', io);
 
 // Database connection
