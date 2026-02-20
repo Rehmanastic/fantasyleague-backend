@@ -42,6 +42,12 @@ io.on('connection', (socket) => {
     console.log('Client disconnected:', socket.id);
   });
 });
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Fantasy Cricket Backend is running 🚀',
+    status: 'OK'
+  });
+});
 
 // Make io available to routes
 app.set('io', io);
