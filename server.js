@@ -15,21 +15,42 @@ dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
+// server.js
 
-// ✅ Use dynamic FRONTEND_URL for both local and production
-const FRONTEND_URL = process.env.NODE_ENV === 'production'
-  ? 'https://fantasyleague-frontend.vercel.app'  // Production frontend URL
-  : process.env.FRONTEND_URL || 'http://localhost:5173'; // Local frontend
+// 1. Clean the FRONTEND_URL to prevent trailing slash issues
+const rawFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = rawFrontendUrl.replace(/\/$/, ""); // Removes any trailing /
 
-console.log('Using FRONTEND_URL:', FRONTEND_URL);
+console.log('Allowing CORS for:', FRONTEND_URL);
 
-// Socket.IO setup
+// 2. Optimized Socket.IO for Railway
 const io = new Server(httpServer, {
   cors: {
     origin: FRONTEND_URL,
     methods: ['GET', 'POST'],
+    credentials: true,
   },
+  // Railway/Vercel specific: Increase stability over proxies
+  pingTimeout: 60000, 
+  pingInterval: 25000,
+  connectTimeout: 45000,
+  transports: ['polling', 'websocket'], // Allow polling for the initial handshake
+  allowEIO3: true
 });
+
+// 3. Express CORS middleware
+app.use(cors({
+  origin: FRONTEND_URL,
+  credentials: true,
+}));
+
+// ... (rest of your routes)
+
+
+
+// ✅ Use dynamic FRONTEND_URL for both local and production
+
+// Socket.IO setup
 
 // Middleware for REST API
 app.use(cors({
