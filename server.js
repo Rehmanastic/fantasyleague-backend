@@ -85,7 +85,25 @@ app.use(cors({
   credentials: true
 }));
 
+// server.js
 
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error("❌ ERROR: MONGODB_URI is not defined in environment variables!");
+}
+
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch((err) => {
+    console.error('❌ MongoDB connection error:', err);
+    // Important: Don't kill the process, let the server try to run
+  });
+
+// Ensure your listen is outside the .then() block
+httpServer.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
 // Socket.IO connection
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
