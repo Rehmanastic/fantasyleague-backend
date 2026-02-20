@@ -16,8 +16,12 @@ dotenv.config();
 const app = express();
 const httpServer = createServer(app);
 
-// ✅ Use FRONTEND_URL for both REST API and Socket.IO
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+// ✅ Use dynamic FRONTEND_URL for both local and production
+const FRONTEND_URL = process.env.NODE_ENV === 'production'
+  ? 'https://fantasyleague-frontend.vercel.app'  // Production frontend URL
+  : process.env.FRONTEND_URL || 'http://localhost:5173'; // Local frontend
+
+console.log('Using FRONTEND_URL:', FRONTEND_URL);
 
 // Socket.IO setup
 const io = new Server(httpServer, {
